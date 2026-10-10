@@ -1,6 +1,6 @@
 # Brief: Goal 1, Pool scene recreation
 
-> Phase: Proof of concept · Status: **approved, except Intent** (✏️ director to rewrite in their own words) · **1A grey box signed off 2026-10-10**
+> Phase: Proof of concept · Status: **approved, except Intent** (✏️ director to rewrite in their own words) · **1A grey box signed off 2026-10-10** · **1C props: detail benchmark accepted 2026-10-10** (textures next)
 
 ## Intent (Director) ✏️
 _Your words: why this scene first, and what it should feel like._
@@ -52,6 +52,8 @@ A Unity scene of the pool, with two characters dancing, and a **10-second test r
 | 2026-10-10 | 1A v1–v3: stairs built climbing away from the corner ("wrong direction") | ✅ Flipped in v4: they now climb toward the booth corner |
 | 2026-10-10 | 1A v4–v5: stairs "not aligned to the edge"; compare with the ref and match it better | ✅ v6: layout and camera matched to `ref01_pool_01` with a 50% overlay (see Build notes) |
 | 2026-10-10 | 1A v6 signed off: "looks good" | ✅ |
+| 2026-10-10 | 1C props v1: props are primitive shapes; need more detail and texture | ✅ v2: kiosk and lounger remodelled in Blender as the detail benchmark |
+| 2026-10-10 | 1C props v2 accepted: "good for now". Scene build proven; textures next session | ✅ |
 
 ## Build notes (crew)
 - **Scene:** `unity/Assets/_Project/Scenes/Goal01_Pool.unity`. **Builder:** `KPop → Goal 1 → Build Pool Grey Box` (`Scripts/Editor/PoolGreyBoxBuilder.cs`); rebuilding replaces `Pool_GreyBox`.
@@ -59,6 +61,7 @@ A Unity scene of the pool, with two characters dancing, and a **10-second test r
 - **1A screenshots:** `captures/goal01_pool/goal01_1A_greybox_v1…v6`.
 - **Measured from the refs (estimates):** basin 17.3 × 12 m, 2.0 m deep. Lanes run parallel to the back wall, 2.5 m apart, the first 2.3 m out from it, and end in a T 1.8 m short of the right wall. Stairs: a 0.9 m-wide flight against the back wall, 8 steps (0.45 m run, 0.25 m rise), top step 0.2 m from the right wall. The booth stands about 1 m out from the back wall and hides the corner.
 - **Camera `CAM_Wide_HighAngle`:** long lens (27° vertical FOV), about 5 m above the pool floor, tilted 32° down, from the front-left into the back-right corner.
-- **Stand-ins:** grey blocks for the booth, seats, lounger, side table and parasol (`PropMarkers`), plus two 1.65 m capsules for the dancers. They're only landmarks for lining up the shot; 1B and 1C replace them.
+- **Stand-ins:** two 1.65 m capsules for the dancers, until 1B. The grey prop blocks used to line up the shot in 1A were replaced by the Blender props in 1C.
 - **1C props come from Blender** (pipeline decision 2026-10-10). Start from the props in `blender/pool/build_pool.py`, export them as FBX and place them on the stand-ins. Only the props come over; the Blender layout, camera, tiles and lighting don't.
-- **1C props pass (v1):** `blender -b blender/pool/pool.blend --python blender/pool/export_props.py` writes one FBX per prop (pivot at bottom centre) to `unity/Assets/_Project/Sets/Pool/Props/`. The builder places them; they import facing +Z, so they get a 180° turn. Kiosk scaled to 0.72 (≈1.3 m) and balloons to ≈0.6 m in Blender to match the ref. Not carried over yet: the parasol stripes (grey for now), balloon translucency, bunting, mosaic tiles.
+- **1C props pass (v1–v2):** `blender -b blender/pool/pool.blend --python blender/pool/export_props.py` writes one FBX per prop (pivot at bottom centre) to `unity/Assets/_Project/Sets/Pool/Props/`. The builder places them; they import facing +Z, so they get a 180° turn. Kiosk scaled to 0.72 (≈1.3 m) and balloons to ≈0.6 m in Blender to match the ref. Not carried over yet: the parasol stripes (grey for now), balloon translucency, bunting, mosaic tiles.
+- **Next session (1C, rest):** mosaic tile material on floor and walls (stylised anime, see 00_vision Fidelity bar), parasol stripes and fringe, see-through balloons, bunting. Then bring the seats, side table, parasol and stair handrail (add posts) up to the kiosk and lounger detail level.

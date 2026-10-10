@@ -176,6 +176,11 @@ M_DARK = principled("panel_dark", "#3A3F4A", 0.3)
 M_CORAL = principled("cushion_coral", "#E0606A", 0.75)
 M_MINT = principled("mint", "#8FD3C3", 0.4)
 M_FIG = principled("scale_figure", "#B7B9BE", 0.6)
+M_PANEL_BLUE = principled("kiosk_window_blue", "#8FA8B8", 0.2)
+M_GRILLE = principled("kiosk_grille", "#C9CDD2", 0.45, Metallic=0.6)
+M_BLACK = principled("slot_black", "#1E2024", 0.4)
+M_PIPING = principled("cushion_piping", "#F6F1E7", 0.6)
+M_GLASS = principled("dome_glass", "#F4FAFF", 0.05, Alpha=0.3, **{"Transmission Weight": 0.9})
 
 
 def balloon_mat(name, hx):
@@ -248,6 +253,73 @@ def tube_between(name, a, b, radius, mat):
     return ob
 
 
+# ---------------------------------------------------------------- detail helpers (props)
+def rounded(ob, width, segments=3):
+    """Bevel every hard edge so the prop reads as manufactured, not as a CG primitive."""
+    m = ob.modifiers.new("bevel", "BEVEL")
+    m.width = width
+    m.segments = segments
+    m.limit_method = "ANGLE"
+    m.harden_normals = True
+    for p in ob.data.polygons:
+        p.use_smooth = True
+    return ob
+
+
+def rbox(name, center, size, mat, radius=0.01, segments=3):
+    """Box with rounded edges."""
+    return rounded(box(name, center, size, mat), min(radius, min(size) * 0.45), segments)
+
+
+def sq_tube(name, a, b, side, mat):
+    """Square-section tube between two points (aluminium furniture frames)."""
+    a, b = Vector(a), Vector(b)
+    d = b - a
+    ob = box(name, (a + b) / 2, (side, side, d.length + side), mat)
+    ob.rotation_mode = "QUATERNION"
+    ob.rotation_quaternion = d.to_track_quat("Z", "Y")
+    return rounded(ob, side * 0.25, 2)
+
+
+def text_mesh(name, body, center, size, mat, extrude=0.002):
+    """Flat 3D text facing -Y (the pool), centred on `center`."""
+    cu = bpy.data.curves.new(name, "FONT")
+    cu.body = body
+    cu.size = size
+    cu.extrude = extrude
+    cu.align_x = "CENTER"
+    cu.align_y = "CENTER"
+    ob = link(bpy.data.objects.new(name, cu))
+    ob.location = center
+    ob.rotation_euler = (math.radians(90), 0, 0)
+    ob.data.materials.append(mat)
+    bpy.ops.object.select_all(action="DESELECT")
+    ob.select_set(True)
+    bpy.context.view_layer.objects.active = ob
+    bpy.ops.object.convert(target="MESH")
+    return bpy.context.active_object
+
+
+def piping(name, pts, radius, mat):
+    """Closed round cord through `pts` (cushion piping)."""
+    cu = bpy.data.curves.new(name, "CURVE")
+    cu.dimensions = "3D"
+    cu.bevel_depth = radius
+    cu.bevel_resolution = 2
+    sp = cu.splines.new("POLY")
+    sp.points.add(len(pts) - 1)
+    for p, co in zip(sp.points, pts):
+        p.co = (*co, 1.0)
+    sp.use_cyclic_u = True
+    ob = link(bpy.data.objects.new(name, cu))
+    ob.data.materials.append(mat)
+    bpy.ops.object.select_all(action="DESELECT")
+    ob.select_set(True)
+    bpy.context.view_layer.objects.active = ob
+    bpy.ops.object.convert(target="MESH")
+    return bpy.context.active_object
+
+
 # ---------------------------------------------------------------- pool shell
 x0, x1 = -POOL_X, 0.0
 y0, y1 = -POOL_Y, 0.0
@@ -309,26 +381,79 @@ for lx in (-6.8, -5.85):
     box("seat_leg", (lx, -0.35, 0.19), (0.05, 0.05, 0.38), M_METAL)
 
 # ---------------------------------------------------------------- kiosk / booth (near the corner)
-# KS scales the whole kiosk; 0.72 brings it to ~1.3 m tall, matching ref01_pool_01 (Unity overlay check).
-KS = 0.72
+# Vending kiosk from ref01_pool_06/07: white cabinet with red edge trim and plinth, "FRESH" sign,
+# framed window, dispenser grille, coin slot, big red funnel, glass dome on top. ~1.33 m tall
+# (matched to ref01_pool_01 with the Unity overlay). Proportions of the front measured off ref 06.
 kx, ky = -0.95, -0.45
-box("kiosk_base", (kx, ky, 0.35 * KS), (0.62 * KS, 0.52 * KS, 0.7 * KS), M_RED)
-box("kiosk_body", (kx, ky, 1.15 * KS), (0.6 * KS, 0.5 * KS, 0.9 * KS), M_WHITE)
-box("kiosk_panel", (kx, ky - 0.26 * KS, 1.15 * KS), (0.36 * KS, 0.02, 0.42 * KS), M_DARK)
-box("kiosk_sign", (kx, ky - 0.26 * KS, 1.5 * KS), (0.4 * KS, 0.02, 0.12 * KS), M_RED)
-cap = sphere("kiosk_cap", (kx, ky, 1.6 * KS), 0.3 * KS, M_WHITE)
-cap.scale = (1.0, 0.85, 0.55)
+KW, KD, KH, KP = 0.45, 0.38, 1.12, 0.07           # width, depth, cabinet height, plinth height
+kf = ky - KD / 2                                    # front face (faces -Y, into the pool)
+top = KP + KH
+rbox("kiosk_plinth", (kx, ky, KP / 2), (KW + 0.02, KD + 0.02, KP), M_RED, 0.008)
+rbox("kiosk_cabinet", (kx, ky, KP + KH / 2), (KW, KD, KH), M_WHITE, 0.012)
+for side in (-1, 1):                                # red trim down both front edges
+    rbox("kiosk_trim", (kx + side * (KW / 2 - 0.012), kf - 0.002, KP + KH / 2), (0.024, 0.01, KH), M_RED, 0.003)
+rbox("kiosk_trim_top", (kx, kf - 0.002, top - 0.012), (KW, 0.01, 0.024), M_RED, 0.003)
+text_mesh("kiosk_sign", "FRESH", (kx, kf - 0.006, top - 0.075), 0.06, M_RED)
+wx, wz = kx - 0.135, top - 0.29                     # framed window (left), two panes
+rbox("kiosk_window_frame", (wx, kf - 0.004, wz), (0.12, 0.012, 0.18), M_RED, 0.004)
+for dz in (-0.042, 0.042):
+    box("kiosk_window_pane", (wx, kf - 0.011, wz + dz), (0.095, 0.004, 0.07), M_PANEL_BLUE)
+rbox("kiosk_grille", (kx, kf - 0.005, top - 0.24), (0.10, 0.012, 0.10), M_GRILLE, 0.004)
+box("kiosk_opening", (kx, kf - 0.006, top - 0.32), (0.09, 0.012, 0.06), M_DARK)
+rbox("kiosk_coin", (kx + 0.135, kf - 0.005, top - 0.21), (0.05, 0.012, 0.05), M_RED, 0.004)
+box("kiosk_slot", (kx + 0.125, kf - 0.006, top - 0.33), (0.012, 0.012, 0.12), M_BLACK)
+# big red funnel: a half cone sticking out of the front, wide end up
+bpy.ops.mesh.primitive_cone_add(vertices=48, radius1=0.015, radius2=0.19, depth=0.27,
+                                location=(kx, kf, top - 0.58))
+funnel = bpy.context.active_object
+funnel.name = "kiosk_funnel"
+funnel.scale = (1.0, 0.5, 1.0)
+funnel.data.materials.append(M_RED)
+bpy.ops.object.shade_smooth()
+cyl("kiosk_collar", (kx, ky, top + 0.015), 0.15, 0.03, M_WHITE, verts=48)
+sphere("kiosk_dome", (kx, ky, top + 0.03), 0.13, M_GLASS)
 
 # ---------------------------------------------------------------- sun lounger (against wall B)
+# From ref01_pool_02/06/07: white square-tube aluminium frame, two-part coral cushion with white
+# piping, backrest raised ~60 degrees at the wall end (+X).
 lx0, lx1, lyc = -2.7, -0.5, -2.6
-box("lounger_cushion", ((lx0 + lx1 - 0.6) / 2, lyc, 0.42), (lx1 - lx0 - 0.6, 0.7, 0.1), M_CORAL)
-back = box("lounger_back", (lx1 - 0.35, lyc, 0.75), (0.75, 0.7, 0.1), M_CORAL)
-back.rotation_euler = (0, math.radians(55), 0)
-for fx in (lx0 + 0.05, lx1 - 0.15):
-    for fy in (lyc - 0.33, lyc + 0.33):
-        tube_between("lounger_leg", (fx, fy, 0.0), (fx, fy, 0.38), 0.02, M_WHITE)
-for fy in (lyc - 0.36, lyc + 0.36):
-    tube_between("lounger_rail", (lx0, fy, 0.38), (lx1 - 0.1, fy, 0.38), 0.02, M_WHITE)
+LT, LW = 0.03, 0.64                                 # frame tube side, frame width (outside)
+rail_z = 0.315                                      # centre height of the side rails
+xh = lx1 - 0.62                                     # hinge between seat and backrest
+xe = xh + 0.32                                      # head end of the base frame
+yl, yr = lyc - LW / 2 + LT / 2, lyc + LW / 2 - LT / 2
+for y in (yl, yr):
+    sq_tube("lounger_rail", (lx0 + 0.04, y, rail_z), (xe, y, rail_z), LT, M_WHITE)
+    sq_tube("lounger_leg_foot", (lx0 + 0.12, y, rail_z), (lx0 + 0.04, y, 0.0), LT, M_WHITE)
+    sq_tube("lounger_leg_head", (xe - 0.04, y, rail_z), (xe - 0.02, y, 0.0), LT, M_WHITE)
+for x in (lx0 + 0.04, xe):
+    sq_tube("lounger_cross", (x, yl, rail_z), (x, yr, rail_z), LT, M_WHITE)
+
+CT, CW = 0.09, LW - 0.04                            # cushion thickness, width
+CR = 0.03                                           # cushion edge radius
+PI = CR * (1 - math.sqrt(0.5))                      # piping sits on the middle of the rounded edge
+c_bot = rail_z + LT / 2
+seat_len = xh - (lx0 + 0.02)
+sx = (lx0 + 0.02 + xh) / 2
+rbox("lounger_cushion_seat", (sx, lyc, c_bot + CT / 2), (seat_len, CW, CT), M_CORAL, CR, 4)
+hx, hy, pz = seat_len / 2 - PI, CW / 2 - PI, c_bot + CT - PI
+piping("lounger_piping_seat", [(sx - hx, lyc - hy, pz), (sx + hx, lyc - hy, pz),
+                               (sx + hx, lyc + hy, pz), (sx - hx, lyc + hy, pz)], 0.006, M_PIPING)
+
+a = math.radians(60)                                # backrest: hinged at xh, raised 60 degrees
+d = Vector((math.cos(a), 0, math.sin(a)))           # along the backrest, up toward the wall
+n = Vector((-math.sin(a), 0, math.cos(a)))          # backrest face normal
+BL = 0.74
+bc = Vector((xh, lyc, c_bot)) + d * (BL / 2) + n * (CT / 2)
+back = rbox("lounger_cushion_back", tuple(bc), (BL, CW, CT), M_CORAL, CR, 4)
+back.rotation_euler = (0, -a, 0)
+corners = [(-BL / 2 + PI, -hy), (BL / 2 - PI, -hy), (BL / 2 - PI, hy), (-BL / 2 + PI, hy)]
+piping("lounger_piping_back", [tuple(bc + d * u + Vector((0, v, 0)) + n * (CT / 2 - PI)) for u, v in corners],
+       0.006, M_PIPING)
+for y in (yl, yr):
+    hinge = Vector((xh, y, rail_z))
+    sq_tube("lounger_back_rail", tuple(hinge), tuple(hinge + d * BL), LT, M_WHITE)
+    sq_tube("lounger_strut", tuple(hinge + d * (BL * 0.55)), (xe, y, rail_z), LT, M_WHITE)
 
 # ---------------------------------------------------------------- side table + parasol
 cyl("table_top", (-0.55, -3.65, 0.55), 0.26, 0.04, M_MINT)

@@ -39,6 +39,9 @@ _Three non-negotiables. Every decision gets checked against these._
 ## Fidelity bar
 _What "Sakura Rabbit level" means to us concretely._
 
+- **Sets are stylised anime, not photoreal** (decided 2026-10-10): one coherent world with the toon-shaded characters.
+- **Props are properly modelled and detailed**: real silhouettes, rounded edges, trims, piping, signs and stickers. No primitive blockouts in final frames.
+
 -
 
 ## Anti-goals
@@ -52,3 +55,4 @@ _Things that make fan-made or AI-made MVs look cheap. We refuse these._
 ## Changelog
 - 2026-10-01: Skeleton created.
 - 2026-10-03: Reframed as a K-pop MV; added artist concept/era.
+- 2026-10-10: Fidelity bar: stylised anime sets; detailed props, no blockouts.
