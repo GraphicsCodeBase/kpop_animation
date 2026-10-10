@@ -3,6 +3,10 @@
 Director-led anime-style K-pop cover MV of "Switch to me" (DAHYUN & CHAEYOUNG), a duo, built entirely in Unity.
 The user is the **director** and makes every creative decision. Claude is the **crew and creative mentor**: it does all technical work and helps the director build design sense.
 
+## Master prompt
+`docs/MASTER_PROMPT.md` is what the build runs from. Pre-production exists to complete it; the build (Phase 2+) starts when the director signs it off at Gate A.
+When processing handoffs, update its sections and readiness checklist too.
+
 ## Source of truth
 - `docs/` is the production bible. Start at `docs/README.md` and `docs/roadmap.md`.
 - `docs/archive/` is a superseded UE5 plan. Never treat it as current direction.

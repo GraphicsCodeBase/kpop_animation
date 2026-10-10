@@ -18,6 +18,14 @@ _Per file: the section and the exact text to add or replace._
 <text>
 ```
 
+## MASTER_PROMPT update
+_Which section(s) this moves forward, the proposed text, and the new readiness status (🔴 / 🟡 / 🟢)._
+
+### Section <n>: <name> → <status>
+```
+<text>
+```
+
 ## Still open
 _Questions raised but not decided. These go into the docs' Open questions sections._
 -

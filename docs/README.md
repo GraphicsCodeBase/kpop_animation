@@ -14,6 +14,9 @@ A solo-artist K-pop music video, made in Unity.
 
 Every file has **Open questions** and a **Changelog**. Nothing is final until the director signs off.
 
+## 🎯 Goal of pre-production
+Complete [MASTER_PROMPT.md](MASTER_PROMPT.md): the document Claude Code builds the whole MV from. Its readiness checklist shows what's left.
+
 ## Production pipeline
 
 | Stage | Director's deliverable | What the AI crew builds from it | Status |
