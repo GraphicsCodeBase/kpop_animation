@@ -38,6 +38,10 @@ Every file has **Open questions** and a **Changelog**. Nothing is final until th
 - [roadmap.md](roadmap.md): who does what, phase by phase, with sign-off gates
 - [briefs/](briefs/_template.md): one work order per build task; this is how the crew is prompted
 
+## Claude Project (thinking room)
+- [claude_project_instructions.md](claude_project_instructions.md): custom instructions to paste into the Claude Project
+- [inbox/](inbox/_handoff_template.md): the Claude Project pushes handoff files here (the only folder it writes to); tell Claude Code "process the inbox"
+
 ## Director's log
 [direction_log.md](direction_log.md): every decision with its *because*.
 
