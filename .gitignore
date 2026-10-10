@@ -1,3 +1,8 @@
 # Obsidian per-machine state
 docs/.obsidian/workspace*.json
 docs/.obsidian/cache
+
+# Test renders stay local (screenshots are committed)
+captures/**/*.mp4
+captures/**/*.mov
+captures/**/*.webm

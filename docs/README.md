@@ -37,6 +37,9 @@ Complete [MASTER_PROMPT.md](MASTER_PROMPT.md): the document Claude Code builds t
 | 11. Grade & VFX | Look per set, finishing touches | Colour grade, particles, post FX | ⚪ |
 | 12. Release | Thumbnail, title card, teaser cut | Exports | ⚪ |
 
+## Claude ↔ Unity pipeline
+[pipeline_claude_unity.md](pipeline_claude_unity.md): how the AI crew builds inside Unity (MCP, scripts, batch mode), the production loop, and the director's controls.
+
 ## Roadmap & briefs
 - [roadmap.md](roadmap.md): who does what, phase by phase, with sign-off gates
 - [briefs/](briefs/_template.md): one work order per build task; this is how the crew is prompted
