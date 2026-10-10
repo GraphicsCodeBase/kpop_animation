@@ -56,6 +56,7 @@ kpop_animation/
       Scripts/Runtime/   beat sync, spring bones, etc.
       Scripts/Editor/    builder scripts, capture tool
       Scenes/  Sets/  Characters/  Timeline/  Audio/
+  blender/         prop modelling: one folder per set, with a build script and .blend; props exported as FBX into unity/
   captures/        screenshots (committed) and test videos (local only, ignored by git)
 ```
 
@@ -68,6 +69,7 @@ kpop_animation/
 ## Decisions
 - MCP: **CoplayDev MCP for Unity**.
 - Test videos stay **local only** (git-ignored); screenshots are committed.
+- **Blender = prop workshop.** Props are modelled in Blender and exported as FBX into `unity/Assets/_Project/Sets/<set>/Props/`. Layout, camera, lighting and render stay in Unity, the single source of truth for the scene.
 
 ## Open questions
 - MCP `execute_code` fails on any code in this project (CodeDom compile error "Line 1", Roslyn not installed). Until fixed, Claude builds through builder scripts and menu items, which is the repeatable route anyway. Fix (install Roslyn or update the package past v10.0.0), or leave it?
@@ -76,3 +78,4 @@ kpop_animation/
 - 2026-10-10: Draft created.
 - 2026-10-10: Approved. CoplayDev MCP; videos local only.
 - 2026-10-10: Added the ref overlay tool; noted the `execute_code` failure.
+- 2026-10-10: Blender's role decided: prop modelling only, FBX into Unity.

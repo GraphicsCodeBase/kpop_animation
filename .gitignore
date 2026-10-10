@@ -9,3 +9,6 @@ captures/**/*.webm
 
 # Ref overlay working images (overwritten every capture; keep finals under captures/<goal>/)
 captures/_overlay/
+
+# Blender auto-backup files
+*.blend1
