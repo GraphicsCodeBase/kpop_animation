@@ -25,7 +25,6 @@ public static class PoolGreyBoxBuilder
     static readonly Color Navy = new Color(0.10f, 0.15f, 0.35f);
     static readonly Color Cream = new Color(0.93f, 0.90f, 0.80f);
     static readonly Color Orange = new Color(0.95f, 0.50f, 0.15f);
-    static readonly Color Marker = new Color(0.55f, 0.55f, 0.58f);
 
     [MenuItem("KPop/Goal 1/Build Pool Grey Box")]
     public static void Build()
@@ -74,13 +73,19 @@ public static class PoolGreyBoxBuilder
         rail.transform.localScale = new Vector3(0.05f, Mathf.Sqrt(span * span + H * H) / 2, 0.05f);
         rail.transform.localRotation = Quaternion.Euler(0, 0, -Mathf.Atan2(span, H) * Mathf.Rad2Deg);
 
-        // Grey stand-ins for the landmark props, only for lining up the shot. Stage 1C replaces them.
-        var props = Group("PropMarkers", root);
-        Box("Booth", new Vector3(L - 1.6f, 0.95f, W - 1.25f), new Vector3(0.6f, 1.9f, 0.5f), Marker, props);
-        Box("Seats", new Vector3(x0 - 1.0f, 0.4f, W - 0.3f), new Vector3(1.1f, 0.8f, 0.5f), Marker, props);
-        Box("Lounger", new Vector3(L - 1.7f, 0.3f, W - 4.0f), new Vector3(1.6f, 0.6f, 0.7f), Marker, props);
-        Box("SideTable", new Vector3(L - 1.7f, 0.3f, W - 5.0f), new Vector3(0.4f, 0.6f, 0.4f), Marker, props);
-        Box("ParasolPole", new Vector3(L - 1.8f, 1.1f, W - 5.3f), new Vector3(0.05f, 2.2f, 0.05f), Marker, props);
+        // Props modelled in Blender (blender/pool/export_props.py), placed by their bottom-centre pivot.
+        // Positions were lined up against ref01_pool_01 with the ref overlay.
+        var props = Group("Props", root);
+        Prop("PoolKiosk", new Vector3(L - 1.6f, 0, W - 1.25f), props);
+        Prop("PoolSeats", new Vector3(x0 - 1.0f, 0, W - 0.25f), props);
+        Prop("PoolLounger", new Vector3(L - 1.85f, 0, W - 4.75f), props, -35f);   // angled foot-toward-camera, as in the ref
+        Prop("PoolSideTable", new Vector3(L - 1.5f, 0, W - 5.0f), props);
+        Prop("PoolParasol", new Vector3(L - 0.9f, 0, W - 5.05f), props, 180f);   // pole leans toward the right wall
+        Prop("Balloon_Lavender", new Vector3(L - 1.8f, 0, W - 2.1f), props);
+        Prop("Balloon_MintA", new Vector3(L - 2.65f, 0, W - 3.4f), props);
+        Prop("Balloon_MintB", new Vector3(L - 0.8f, 0, W - 6.0f), props);
+        Prop("Balloon_Pink", new Vector3(L - 1.3f, 0, W - 8.0f), props);
+        Prop("Balloon_Lilac", new Vector3(L - 0.8f, 0, W - 9.5f), props);
 
         // 1.65 m stand-ins for the two dancers, between lanes 1 and 2.
         var markers = Group("ScaleMarkers_165cm", root);
@@ -115,6 +120,25 @@ public static class PoolGreyBoxBuilder
 
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         EditorSceneManager.SaveOpenScenes();
+    }
+
+    const string PropDir = "Assets/_Project/Sets/Pool/Props/";
+    // Blender props import facing +Z; turn them so their fronts face into the pool (-Z).
+    const float PropYaw = 180f;
+
+    static void Prop(string file, Vector3 floorPos, Transform parent, float yaw = 0f)
+    {
+        var asset = AssetDatabase.LoadAssetAtPath<GameObject>(PropDir + file + ".fbx");
+        if (asset == null)
+        {
+            Debug.LogWarning("PoolGreyBoxBuilder: missing prop " + PropDir + file + ".fbx (run blender/pool/export_props.py)");
+            return;
+        }
+        var go = (GameObject)PrefabUtility.InstantiatePrefab(asset, parent);
+        // Single-mesh FBX files import with the mesh offset on the root (e.g. a balloon's height), so keep it.
+        var turn = Quaternion.Euler(0, PropYaw + yaw, 0);
+        go.transform.localPosition = floorPos + turn * asset.transform.localPosition;
+        go.transform.localRotation = turn * asset.transform.localRotation;
     }
 
     static Transform Group(string name, Transform parent)
