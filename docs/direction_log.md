@@ -10,3 +10,5 @@ One entry per decision. The *because* is the important part.
 | 2026-10-03 | Cast | Two characters (duo), like the original | AI crew absorbs the doubled technical work; the duo dynamic is core to the original's choreography and framing | Solo adaptation |
 | 2026-10-10 | Pipeline | Unity MCP: CoplayDev MCP for Unity | Free, built for Claude Code, no lock-in; builder scripts and scenes stay the same if we switch | Unity official MCP (paid beta, needs Unity Cloud) |
 | 2026-10-10 | Pipeline | Test videos stay local; only screenshots go in git | Videos are large and change constantly; screenshots are enough for history | Git LFS for renders |
+| 2026-10-10 | Goal 1 | First goal: recreate the S2 pool scene as a proof of concept | _(your because)_ | Starting with the dark studio (S1) |
+| 2026-10-10 | Goal 1 | Faithful recreation, Zone A only, placeholder characters | Prove the pipeline first; keep creative and character decisions for later | Own take; including Zone B; waiting for the designed duo |
