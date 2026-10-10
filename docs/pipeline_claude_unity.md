@@ -34,6 +34,7 @@ Director: reviews the images/renders → notes in the brief's review table
 ## Visual feedback (how Claude "sees")
 - **Screenshots:** a small editor tool that renders a chosen camera to PNG in `captures/`. Claude reads the images and checks composition, colour and lighting.
 - **Test renders:** Unity Recorder → MP4 for the director (motion, timing, music). Claude can't judge motion or audio; the director does.
+- **Ref overlay:** `KPop → Goal 1 → Capture Ref Overlay` renders the main camera at a reference frame's exact size and blends it 50/50 with the ref (`captures/_overlay/`, git-ignored). It's the most reliable way to line up a set and camera with a reference.
 
 ## MCP options (researched 2026-10-10)
 
@@ -69,8 +70,9 @@ kpop_animation/
 - Test videos stay **local only** (git-ignored); screenshots are committed.
 
 ## Open questions
--
+- MCP `execute_code` fails on any code in this project (CodeDom compile error "Line 1", Roslyn not installed). Until fixed, Claude builds through builder scripts and menu items, which is the repeatable route anyway. Fix (install Roslyn or update the package past v10.0.0), or leave it?
 
 ## Changelog
 - 2026-10-10: Draft created.
 - 2026-10-10: Approved. CoplayDev MCP; videos local only.
+- 2026-10-10: Added the ref overlay tool; noted the `execute_code` failure.

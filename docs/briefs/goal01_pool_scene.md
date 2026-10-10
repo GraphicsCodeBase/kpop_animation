@@ -1,6 +1,6 @@
 # Brief: Goal 1, Pool scene recreation
 
-> Phase: Proof of concept · Status: **approved, except Intent** (✏️ director to rewrite in their own words)
+> Phase: Proof of concept · Status: **approved, except Intent** (✏️ director to rewrite in their own words) · **1A grey box signed off 2026-10-10**
 
 ## Intent (Director) ✏️
 _Your words: why this scene first, and what it should feel like._
@@ -49,3 +49,14 @@ A Unity scene of the pool, with two characters dancing, and a **10-second test r
 ## Review notes
 | Date | Note | Resolved |
 |---|---|---|
+| 2026-10-10 | 1A v1–v3: stairs built climbing away from the corner ("wrong direction") | ✅ Flipped in v4: they now climb toward the booth corner |
+| 2026-10-10 | 1A v4–v5: stairs "not aligned to the edge"; compare with the ref and match it better | ✅ v6: layout and camera matched to `ref01_pool_01` with a 50% overlay (see Build notes) |
+| 2026-10-10 | 1A v6 signed off: "looks good" | ✅ |
+
+## Build notes (crew)
+- **Scene:** `unity/Assets/_Project/Scenes/Goal01_Pool.unity`. **Builder:** `KPop → Goal 1 → Build Pool Grey Box` (`Scripts/Editor/PoolGreyBoxBuilder.cs`); rebuilding replaces `Pool_GreyBox`.
+- **Matching tool:** `KPop → Goal 1 → Capture Ref Overlay` renders the main camera at the ref's size (685×532) and blends it 50/50 with `ref01_pool_01` into `captures/_overlay/` (git-ignored). Use it again for the 1C and 1D checks.
+- **1A screenshots:** `captures/goal01_pool/goal01_1A_greybox_v1…v6`.
+- **Measured from the refs (estimates):** basin 17.3 × 12 m, 2.0 m deep. Lanes run parallel to the back wall, 2.5 m apart, the first 2.3 m out from it, and end in a T 1.8 m short of the right wall. Stairs: a 0.9 m-wide flight against the back wall, 8 steps (0.45 m run, 0.25 m rise), top step 0.2 m from the right wall. The booth stands about 1 m out from the back wall and hides the corner.
+- **Camera `CAM_Wide_HighAngle`:** long lens (27° vertical FOV), about 5 m above the pool floor, tilted 32° down, from the front-left into the back-right corner.
+- **Stand-ins:** grey blocks for the booth, seats, lounger, side table and parasol (`PropMarkers`), plus two 1.65 m capsules for the dancers. They're only landmarks for lining up the shot; 1B and 1C replace them.

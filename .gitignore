@@ -6,3 +6,6 @@ docs/.obsidian/cache
 captures/**/*.mp4
 captures/**/*.mov
 captures/**/*.webm
+
+# Ref overlay working images (overwritten every capture; keep finals under captures/<goal>/)
+captures/_overlay/

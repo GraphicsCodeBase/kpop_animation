@@ -37,8 +37,8 @@ _Timestamps are approximate (±1 s)._
 ### Two zones
 **Zone A: the pool basin** (main dance area)
 - Rectangular empty pool. Flat floor and walls covered in **small mosaic tiles**, a mix of aqua, light blue and white.
-- **Dark navy lane lines** across the floor (pool lane markings), reading as strong diagonals in the high-angle shot.
-- **Pool stairs** in the back-left corner: cream steps with **orange nosing stripes**, chrome handrail.
+- **Dark navy lane lines** across the floor (pool lane markings), reading as strong diagonals in the high-angle shot. They run parallel to the back wall and end in a T short of the right wall.
+- **Pool stairs** against the back wall: a narrow flight with cream steps, **orange nosing stripes** and a chrome handrail. They climb toward the back-right corner, and the top step ends beside the booth.
 
 **Zone B: curved mosaic stairs** (close-ups and the stair performance)
 - Sunken channels with **curved walls**, thick rounded **cream coping** on top.
@@ -48,11 +48,11 @@ _Timestamps are approximate (±1 s)._
 ### Props (Zone A)
 | Prop | Look | Placement |
 |---|---|---|
-| Stadium seats ×2 | Orange plastic, metal frame | Left wall |
-| Kiosk / booth | Red and white, tall, with a small sign and panel | Against the back wall, centre |
+| Stadium seats ×2 | Orange plastic, metal frame | Back wall, left of the stairs |
+| Kiosk / booth | Red and white, tall, with a small sign and panel | Back-right corner, standing about 1 m out from the back wall (it hides the corner in the wide) |
 | Sun lounger | Coral/red cushion, white frame | Right side |
 | Side table | Small, round, mint | Beside the lounger |
-| Parasol | Pale green and white stripes, fringe | Far right corner |
+| Parasol | Pale green and white stripes, fringe | Right wall, just in front of the lounger |
 | Balloons ×6–8 | Large, semi-transparent pastels (lavender, mint, pink, light blue) | Scattered on the floor |
 | Bunting | Triangle flags (pink, teal, yellow, lavender, blue, red) on a string | Strung diagonally across the pool |
 
@@ -62,7 +62,7 @@ _Timestamps are approximate (±1 s)._
 - **Grade:** soft and slightly desaturated, lifted blacks, cool and airy.
 
 ### Camera
-- **Wide:** high angle from the pool edge looking down at about 45°. Shows the floor lines, props, and both dancers.
+- **Wide:** high angle on a long lens, from the front-left into the back-right corner. Measured in the 1A grey box: about 27° vertical FOV, 5 m above the pool floor, 32° down. Shows the floor lines, props and both dancers.
 - **Medium and close-up:** near eye level, close to the dancer; motion blur on fast moves.
 
 ### Styling seen here
@@ -77,8 +77,10 @@ _Decide after the shot breakdown: which sets we keep, merge, cut or reinvent._
 
 ## Open questions
 - How many sets can we afford? The original has ~9. Merging is a valid directing choice.
+- The pool refs are near-4:3 crops (685×532). At 16:9 the wide shows extra width on both sides. What fills it: more pool and props, or a tighter lens? (Decide by 1D.)
 
 ## Changelog
 - 2026-10-01: Skeleton created (as single room).
 - 2026-10-03: Room → multiple sets.
 - 2026-10-03: Added rough original set map from REF-01.
+- 2026-10-10: Corrected the S2 Zone A layout after matching the 1A grey box to `ref01_pool_01`: stairs, kiosk, seats, parasol, lane ends, wide camera.

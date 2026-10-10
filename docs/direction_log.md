@@ -12,3 +12,4 @@ One entry per decision. The *because* is the important part.
 | 2026-10-10 | Pipeline | Test videos stay local; only screenshots go in git | Videos are large and change constantly; screenshots are enough for history | Git LFS for renders |
 | 2026-10-10 | Goal 1 | First goal: recreate the S2 pool scene as a proof of concept | _(your because)_ | Starting with the dark studio (S1) |
 | 2026-10-10 | Goal 1 | Faithful recreation, Zone A only, placeholder characters | Prove the pipeline first; keep creative and character decisions for later | Own take; including Zone B; waiting for the designed duo |
+| 2026-10-10 | Goal 1 | 1A grey box signed off. The stairs climb toward the back-right corner and end beside the booth; layout and camera are matched to `ref01_pool_01` with an overlay | Faithful recreation: the space has to read as the ref's pool | Stairs climbing away from the corner (v1–v3); stairs set into the wall (v5) |
