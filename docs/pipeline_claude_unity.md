@@ -1,6 +1,6 @@
 # Claude ↔ Unity Pipeline
 
-> Status: 🟡 Draft, awaiting director approval · How the AI crew builds inside Unity, and how the director stays in control.
+> Status: 🟢 Approved 2026-10-10 · How the AI crew builds inside Unity, and how the director stays in control.
 
 ## The three ways Claude works in Unity
 
@@ -43,7 +43,7 @@ Director: reviews the images/renders → notes in the brief's review table
 | **Unity's official MCP server** (Unity AI, open beta) | Needs a Unity AI trial/subscription; pricing unclear | Unity 6+, `com.unity.ai.assistant`, project must be connected to Unity Cloud; beta, may change |
 | Others (IvanMurzak, CoderGamester, UniMCP4CC…) | Free | Smaller; check Unity 6.3 support |
 
-**Recommendation:** start with **MCP for Unity (CoplayDev)**. It's free, built for exactly this, and nothing locks us in. Re-evaluate the official server once it leaves beta.
+**Decision (2026-10-10): MCP for Unity (CoplayDev).** Free, built for exactly this, and nothing locks us in. Re-evaluate the official server once it leaves beta.
 
 ## Repo layout
 ```
@@ -55,7 +55,7 @@ kpop_animation/
       Scripts/Runtime/   beat sync, spring bones, etc.
       Scripts/Editor/    builder scripts, capture tool
       Scenes/  Sets/  Characters/  Timeline/  Audio/
-  captures/        screenshots and test renders (large renders ignored by git)
+  captures/        screenshots (committed) and test videos (local only, ignored by git)
 ```
 
 ## Director's controls
@@ -64,9 +64,13 @@ kpop_animation/
 - **Nothing is committed without the director seeing it** (screenshots or render).
 - **Unity Editor is the director's to open and close.** Claude says when it needs the editor open (MCP) or closed (batch mode).
 
+## Decisions
+- MCP: **CoplayDev MCP for Unity**.
+- Test videos stay **local only** (git-ignored); screenshots are committed.
+
 ## Open questions
-- Approve the MCP choice (CoplayDev vs. official).
-- Do large renders go in git (with Git LFS) or stay local only?
+-
 
 ## Changelog
 - 2026-10-10: Draft created.
+- 2026-10-10: Approved. CoplayDev MCP; videos local only.
