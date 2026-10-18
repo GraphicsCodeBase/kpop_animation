@@ -36,7 +36,7 @@ _Timestamps are approximate (±1 s)._
 
 ### Two zones
 **Zone A: the pool basin** (main dance area)
-- Rectangular empty pool. Flat floor and walls covered in **small mosaic tiles**, a mix of aqua, light blue and white.
+- Rectangular empty pool. Flat floor and walls covered in **small mosaic tiles**, a mix of aqua, light blue and white. Measured in 1C: about 2.5 cm tiles; a pale aqua field with dark teal tiles on every other tile in rows and columns, so the dark tiles never touch.
 - **Dark navy lane lines** across the floor (pool lane markings), reading as strong diagonals in the high-angle shot. They run parallel to the back wall and end in a T short of the right wall.
 - **Pool stairs** against the back wall: a narrow flight with cream steps, **orange nosing stripes** and a chrome handrail. They climb toward the back-right corner, and the top step ends beside the booth.
 
@@ -84,3 +84,4 @@ _Decide after the shot breakdown: which sets we keep, merge, cut or reinvent._
 - 2026-10-03: Room → multiple sets.
 - 2026-10-03: Added rough original set map from REF-01.
 - 2026-10-10: Corrected the S2 Zone A layout after matching the 1A grey box to `ref01_pool_01`: stairs, kiosk, seats, parasol, lane ends, wide camera.
+- 2026-10-18: Added the measured S2 mosaic pattern (tile size, dot lattice) from the 1C tile pass.

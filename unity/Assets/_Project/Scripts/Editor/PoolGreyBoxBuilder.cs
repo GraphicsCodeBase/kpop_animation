@@ -20,9 +20,16 @@ public static class PoolGreyBoxBuilder
     // Lane centre lines, measured out from the back wall.
     static readonly float[] LaneOffsets = { 2.3f, 4.8f, 7.3f, 9.8f };
 
-    static readonly Color Tile = new Color(0.62f, 0.82f, 0.86f);
+    // Mosaic tiles, sampled from ref01_pool_01: a pale aqua field with scattered darker teal tiles.
+    // 2.5 cm tiles. In the ref the dark tiles sit on every other tile (a 5 cm lattice) and never touch,
+    // so a 25 cm lane spans 5 dot rows. Lane edges and T ends all fall on the 2.5 cm grid.
+    const float TileSize = 0.025f;
+    const float DotChance = 0.9f;
+    static readonly (string hex, float weight)[] PoolPalette = { ("#CCE6E3", 42), ("#BEDDDA", 30), ("#5FA3AA", 18), ("#4A93A0", 10) };
+    static readonly (string hex, float weight)[] LanePalette = { ("#2B4C7E", 55), ("#36598C", 25), ("#22406E", 12), ("#5C82B0", 8) };
+    const string PoolGrout = "#DDEDEB", LaneGrout = "#7E9FBE";
+
     static readonly Color Deck = new Color(0.85f, 0.85f, 0.82f);
-    static readonly Color Navy = new Color(0.10f, 0.15f, 0.35f);
     static readonly Color Cream = new Color(0.93f, 0.90f, 0.80f);
     static readonly Color Orange = new Color(0.95f, 0.50f, 0.15f);
 
@@ -33,12 +40,15 @@ public static class PoolGreyBoxBuilder
         if (old != null) Object.DestroyImmediate(old);
         var root = new GameObject("Pool_GreyBox").transform;
 
+        var poolTiles = MosaicMaterial("M_PoolMosaic", PoolPalette, PoolGrout, 0f, dotLattice: true);
+        var laneTiles = MosaicMaterial("M_LaneMosaic", LanePalette, LaneGrout, 17f, dotLattice: false);
+
         var basin = Group("Basin", root);
-        Box("Floor", new Vector3(L / 2, -0.05f, W / 2), new Vector3(L, 0.1f, W), Tile, basin);
-        Box("Wall_Back", new Vector3(L / 2, H / 2, W + T / 2), new Vector3(L + 2 * T, H, T), Tile, basin);
-        Box("Wall_Right", new Vector3(L + T / 2, H / 2, W / 2), new Vector3(T, H, W), Tile, basin);
-        Box("Wall_Left", new Vector3(-T / 2, H / 2, W / 2), new Vector3(T, H, W), Tile, basin);
-        Box("Wall_Front", new Vector3(L / 2, H / 2, -T / 2), new Vector3(L + 2 * T, H, T), Tile, basin);
+        Box("Floor", new Vector3(L / 2, -0.05f, W / 2), new Vector3(L, 0.1f, W), poolTiles, basin);
+        Box("Wall_Back", new Vector3(L / 2, H / 2, W + T / 2), new Vector3(L + 2 * T, H, T), poolTiles, basin);
+        Box("Wall_Right", new Vector3(L + T / 2, H / 2, W / 2), new Vector3(T, H, W), poolTiles, basin);
+        Box("Wall_Left", new Vector3(-T / 2, H / 2, W / 2), new Vector3(T, H, W), poolTiles, basin);
+        Box("Wall_Front", new Vector3(L / 2, H / 2, -T / 2), new Vector3(L + 2 * T, H, T), poolTiles, basin);
 
         var deck = Group("Deck", root);
         Box("Deck_Back", new Vector3(L / 2, H - 0.05f, W + T + 2f), new Vector3(L + 8, 0.1f, 4f), Deck, deck);
@@ -51,8 +61,8 @@ public static class PoolGreyBoxBuilder
         foreach (var off in LaneOffsets)
         {
             float z = W - off;
-            Box("Lane_" + off, new Vector3((laneStart + laneEnd) / 2, 0.005f, z), new Vector3(laneEnd - laneStart, 0.01f, laneW), Navy, lanes);
-            Box("LaneT_" + off, new Vector3(laneEnd - laneW / 2, 0.006f, z), new Vector3(laneW, 0.01f, 1.0f), Navy, lanes);
+            Box("Lane_" + off, new Vector3((laneStart + laneEnd) / 2, 0.005f, z), new Vector3(laneEnd - laneStart, 0.01f, laneW), laneTiles, lanes);
+            Box("LaneT_" + off, new Vector3(laneEnd - laneW / 2, 0.006f, z), new Vector3(laneW, 0.01f, 1.0f), laneTiles, lanes);
         }
 
         // Stairs: bottom step on the left, top step StairTopGap short of the corner, at deck level.
@@ -82,7 +92,7 @@ public static class PoolGreyBoxBuilder
         Prop("PoolSideTable", new Vector3(L - 1.5f, 0, W - 5.0f), props);
         Prop("PoolParasol", new Vector3(L - 0.9f, 0, W - 5.05f), props, 180f);   // pole leans toward the right wall
         Prop("Balloon_Lavender", new Vector3(L - 1.8f, 0, W - 2.1f), props);
-        Prop("Balloon_MintA", new Vector3(L - 2.65f, 0, W - 3.4f), props);
+        Prop("Balloon_MintA", new Vector3(L - 4.18f, 0, W - 3.4f), props);   // moved left by the director in the scene (2026-10-17)
         Prop("Balloon_MintB", new Vector3(L - 0.8f, 0, W - 6.0f), props);
         Prop("Balloon_Pink", new Vector3(L - 1.3f, 0, W - 8.0f), props);
         Prop("Balloon_Lilac", new Vector3(L - 0.8f, 0, W - 9.5f), props);
@@ -148,14 +158,52 @@ public static class PoolGreyBoxBuilder
         return t;
     }
 
+    const string MaterialDir = "Assets/_Project/Sets/Pool/Materials/";
+
+    // Creates or updates a KPop/Mosaic material asset, so the palette here stays the source of truth.
+    static Material MosaicMaterial(string name, (string hex, float weight)[] palette, string grout, float seed, bool dotLattice)
+    {
+        string path = MaterialDir + name + ".mat";
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (mat == null)
+        {
+            System.IO.Directory.CreateDirectory(MaterialDir);
+            mat = new Material(Shader.Find("KPop/Mosaic"));
+            AssetDatabase.CreateAsset(mat, path);
+        }
+        mat.SetFloat("_TileSize", TileSize);
+        mat.SetVector("_GridOffset", Vector4.zero);
+        mat.SetFloat("_DotLattice", dotLattice ? 1f : 0f);
+        mat.SetFloat("_DotChance", DotChance);
+        mat.SetFloat("_Seed", seed);
+        mat.SetColor("_GroutColor", Hex(grout));
+        for (int i = 0; i < 4; i++) mat.SetColor("_Color" + i, Hex(palette[i].hex));
+        mat.SetVector("_Weights", new Vector4(palette[0].weight, palette[1].weight, palette[2].weight, palette[3].weight));
+        EditorUtility.SetDirty(mat);
+        AssetDatabase.SaveAssets();
+        return mat;
+    }
+
+    static Color Hex(string hex) => ColorUtility.TryParseHtmlString(hex, out var c) ? c : Color.magenta;
+
     static void Box(string name, Vector3 center, Vector3 size, Color color, Transform parent)
+    {
+        var r = Box(name, center, size, parent);
+        r.sharedMaterial = new Material(r.sharedMaterial) { color = color };
+    }
+
+    static void Box(string name, Vector3 center, Vector3 size, Material mat, Transform parent)
+    {
+        Box(name, center, size, parent).sharedMaterial = mat;
+    }
+
+    static Renderer Box(string name, Vector3 center, Vector3 size, Transform parent)
     {
         var g = GameObject.CreatePrimitive(PrimitiveType.Cube);
         g.name = name;
         g.transform.SetParent(parent, false);
         g.transform.localPosition = center;
         g.transform.localScale = size;
-        var r = g.GetComponent<Renderer>();
-        r.sharedMaterial = new Material(r.sharedMaterial) { color = color };
+        return g.GetComponent<Renderer>();
     }
 }

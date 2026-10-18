@@ -35,6 +35,12 @@ Director: reviews the images/renders → notes in the brief's review table
 - **Screenshots:** a small editor tool that renders a chosen camera to PNG in `captures/`. Claude reads the images and checks composition, colour and lighting.
 - **Test renders:** Unity Recorder → MP4 for the director (motion, timing, music). Claude can't judge motion or audio; the director does.
 - **Ref overlay:** `KPop → Goal 1 → Capture Ref Overlay` renders the main camera at a reference frame's exact size and blends it 50/50 with the ref (`captures/_overlay/`, git-ignored). It's the most reliable way to line up a set and camera with a reference.
+- **Batch capture:** with the editor closed, `Unity.exe -batchmode -projectPath unity -executeMethod BatchCapture.Goal01Pool -quit` rebuilds the pool and writes the overlay plus a 1080p wide and close-ups to `captures/_overlay/`.
+
+## Setup on the director's PC (2026-10-18)
+- Open the project at **`unity/`**, not the repo root. Opening the root makes Unity create an empty project there.
+- MCP for Unity needs Python 3.10+ and uv. It uses Anaconda's Python 3.13 (first on the user PATH), with uv installed into it by pip.
+- In Unity: **Window → MCP for Unity → Toggle MCP Window → Start Server**. It serves `UnityMCP` at `http://127.0.0.1:8080/mcp`; only Claude Code is registered as a client. Claude Code loads the MCP tools when a session starts.
 
 ## MCP options (researched 2026-10-10)
 
@@ -79,3 +85,4 @@ kpop_animation/
 - 2026-10-10: Approved. CoplayDev MCP; videos local only.
 - 2026-10-10: Added the ref overlay tool; noted the `execute_code` failure.
 - 2026-10-10: Blender's role decided: prop modelling only, FBX into Unity.
+- 2026-10-18: Added batch capture and the PC setup for MCP for Unity (Python, uv, server, project path).
