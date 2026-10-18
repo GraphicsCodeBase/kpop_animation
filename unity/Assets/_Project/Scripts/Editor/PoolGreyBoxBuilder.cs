@@ -91,11 +91,17 @@ public static class PoolGreyBoxBuilder
         Prop("PoolLounger", new Vector3(L - 1.85f, 0, W - 4.75f), props, -35f);   // angled foot-toward-camera, as in the ref
         Prop("PoolSideTable", new Vector3(L - 1.5f, 0, W - 5.0f), props);
         Prop("PoolParasol", new Vector3(L - 0.9f, 0, W - 5.05f), props, 180f);   // pole leans toward the right wall
-        Prop("Balloon_Lavender", new Vector3(L - 1.8f, 0, W - 2.1f), props);
-        Prop("Balloon_MintA", new Vector3(L - 4.18f, 0, W - 3.4f), props);   // moved left by the director in the scene (2026-10-17)
-        Prop("Balloon_MintB", new Vector3(L - 0.8f, 0, W - 6.0f), props);
-        Prop("Balloon_Pink", new Vector3(L - 1.3f, 0, W - 8.0f), props);
-        Prop("Balloon_Lilac", new Vector3(L - 0.8f, 0, W - 9.5f), props);
+        Balloon(Prop("Balloon_Lavender", new Vector3(L - 1.8f, 0, W - 2.1f), props), "#C7B8E8");
+        Balloon(Prop("Balloon_MintA", new Vector3(L - 4.18f, 0, W - 3.4f), props), "#BFE7B8");   // moved left by the director in the scene (2026-10-17)
+        Balloon(Prop("Balloon_MintB", new Vector3(L - 0.8f, 0, W - 6.0f), props), "#BCE6C8");
+        Balloon(Prop("Balloon_Pink", new Vector3(L - 1.3f, 0, W - 8.0f), props), "#F2C4D6");
+        Balloon(Prop("Balloon_Lilac", new Vector3(L - 0.8f, 0, W - 9.5f), props), "#CFC4EE");
+
+        // Bunting: two strings fitted to ref01_pool_01 by casting rays from the matched camera.
+        // They hang over the pool from tie points just above the walls and meet near (9.8, 2.8, 11.05).
+        var bunting = Group("Bunting", root);
+        Bunting("Bunting_Back", new Vector3(8.79f, 3.19f, W), new Vector3(L, 3.19f, 4.03f), 0.87f, bunting);   // diagonal across the back-right corner
+        Bunting("Bunting_Near", new Vector3(10.74f, 2.99f, 0f), new Vector3(9.82f, 2.99f, W), 0.59f, bunting);   // lengthwise, mostly out of frame
 
         // 1.65 m stand-ins for the two dancers, between lanes 1 and 2.
         var markers = Group("ScaleMarkers_165cm", root);
@@ -128,6 +134,7 @@ public static class PoolGreyBoxBuilder
         }
         sun.transform.rotation = Quaternion.Euler(70, 30, 0);
 
+        AssetDatabase.SaveAssets();
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         EditorSceneManager.SaveOpenScenes();
     }
@@ -136,19 +143,163 @@ public static class PoolGreyBoxBuilder
     // Blender props import facing +Z; turn them so their fronts face into the pool (-Z).
     const float PropYaw = 180f;
 
-    static void Prop(string file, Vector3 floorPos, Transform parent, float yaw = 0f)
+    static GameObject Prop(string file, Vector3 floorPos, Transform parent, float yaw = 0f)
     {
         var asset = AssetDatabase.LoadAssetAtPath<GameObject>(PropDir + file + ".fbx");
         if (asset == null)
         {
             Debug.LogWarning("PoolGreyBoxBuilder: missing prop " + PropDir + file + ".fbx (run blender/pool/export_props.py)");
-            return;
+            return null;
         }
         var go = (GameObject)PrefabUtility.InstantiatePrefab(asset, parent);
         // Single-mesh FBX files import with the mesh offset on the root (e.g. a balloon's height), so keep it.
         var turn = Quaternion.Euler(0, PropYaw + yaw, 0);
         go.transform.localPosition = floorPos + turn * asset.transform.localPosition;
         go.transform.localRotation = turn * asset.transform.localRotation;
+        return go;
+    }
+
+    // Swaps a balloon's imported (opaque) material for a see-through KPop/Balloon one.
+    static void Balloon(GameObject go, string hex)
+    {
+        if (go == null) return;
+        var mat = MaterialAsset("M_" + go.name, "KPop/Balloon");
+        mat.SetColor("_BaseColor", Hex(hex));
+        mat.SetFloat("_AlphaCenter", 0.65f);
+        mat.SetFloat("_AlphaEdge", 0.95f);
+        foreach (var r in go.GetComponentsInChildren<Renderer>()) r.sharedMaterial = mat;
+    }
+
+    // Bunting flags in the ref's order along the string.
+    static readonly string[] FlagColours = { "#F28DB2", "#3D7FD1", "#2BB3C0", "#F5C842", "#B79CE0" };
+    const float FlagWidth = 0.27f, FlagDrop = 0.32f, FlagSpacing = 0.36f, StringRadius = 0.006f;
+
+    // A sagging string from a to b (parabolic sag at the middle), with triangle flags hanging from it.
+    // Meshes are saved as assets so the scene keeps them.
+    static void Bunting(string name, Vector3 a, Vector3 b, float sag, Transform parent)
+    {
+        const int seg = 60;
+        var pts = new Vector3[seg + 1];
+        for (int i = 0; i <= seg; i++)
+        {
+            float t = (float)i / seg;
+            pts[i] = Vector3.Lerp(a, b, t) + Vector3.down * (sag * 4 * t * (1 - t));
+        }
+
+        var group = Group(name, parent);
+        var stringMat = LitMaterial("M_BuntingString", "#F4F2EE");
+        Child(name + "_String", TubeMesh(name + "_String", pts, StringRadius), stringMat, group);
+
+        // Walk the string at a fixed spacing and give each flag the next colour.
+        var flags = new System.Collections.Generic.List<Vector3>[FlagColours.Length];
+        for (int c = 0; c < flags.Length; c++) flags[c] = new System.Collections.Generic.List<Vector3>();
+        float next = FlagSpacing / 2, walked = 0;
+        int n = 0;
+        for (int i = 0; i < seg; i++)
+        {
+            float len = Vector3.Distance(pts[i], pts[i + 1]);
+            while (next <= walked + len)
+            {
+                Vector3 p = Vector3.Lerp(pts[i], pts[i + 1], (next - walked) / len);
+                Vector3 side = (pts[i + 1] - pts[i]).normalized * (FlagWidth / 2);
+                flags[n % flags.Length].AddRange(new[] { p - side, p + side, p + Vector3.down * FlagDrop });
+                n++;
+                next += FlagSpacing;
+            }
+            walked += len;
+        }
+        for (int c = 0; c < flags.Length; c++)
+            Child(name + "_Flags_" + c, TriangleMesh(name + "_Flags_" + c, flags[c]), LitMaterial("M_Flag_" + c, FlagColours[c]), group);
+    }
+
+    const string GeneratedDir = "Assets/_Project/Sets/Pool/Generated/";
+
+    static Mesh SaveMesh(Mesh mesh, string name)
+    {
+        System.IO.Directory.CreateDirectory(GeneratedDir);
+        string path = GeneratedDir + name + ".asset";
+        AssetDatabase.DeleteAsset(path);
+        mesh.name = name;
+        mesh.RecalculateBounds();
+        AssetDatabase.CreateAsset(mesh, path);
+        return mesh;
+    }
+
+    // Double-sided triangles (both windings), so flags read from either side.
+    static Mesh TriangleMesh(string name, System.Collections.Generic.List<Vector3> verts)
+    {
+        var all = new System.Collections.Generic.List<Vector3>(verts);
+        all.AddRange(verts);
+        var tris = new int[verts.Count * 2];
+        for (int i = 0; i < verts.Count; i += 3)
+        {
+            tris[i] = i; tris[i + 1] = i + 1; tris[i + 2] = i + 2;
+            int j = verts.Count + i;
+            tris[verts.Count + i] = j; tris[verts.Count + i + 1] = j + 2; tris[verts.Count + i + 2] = j + 1;
+        }
+        var mesh = new Mesh { vertices = all.ToArray(), triangles = tris };
+        mesh.RecalculateNormals();
+        return SaveMesh(mesh, name);
+    }
+
+    static Mesh TubeMesh(string name, Vector3[] path, float radius, int sides = 6)
+    {
+        var verts = new Vector3[path.Length * sides];
+        var tris = new int[(path.Length - 1) * sides * 6];
+        for (int i = 0; i < path.Length; i++)
+        {
+            Vector3 fwd = (path[Mathf.Min(i + 1, path.Length - 1)] - path[Mathf.Max(i - 1, 0)]).normalized;
+            Vector3 u = Vector3.Cross(fwd, Vector3.up).normalized, v = Vector3.Cross(u, fwd);
+            for (int s = 0; s < sides; s++)
+            {
+                float ang = s * Mathf.PI * 2 / sides;
+                verts[i * sides + s] = path[i] + (u * Mathf.Cos(ang) + v * Mathf.Sin(ang)) * radius;
+            }
+        }
+        int k = 0;
+        for (int i = 0; i < path.Length - 1; i++)
+            for (int s = 0; s < sides; s++)
+            {
+                int a0 = i * sides + s, a1 = i * sides + (s + 1) % sides, b0 = a0 + sides, b1 = a1 + sides;
+                tris[k++] = a0; tris[k++] = b0; tris[k++] = a1;
+                tris[k++] = a1; tris[k++] = b0; tris[k++] = b1;
+            }
+        var mesh = new Mesh { vertices = verts, triangles = tris };
+        mesh.RecalculateNormals();
+        return SaveMesh(mesh, name);
+    }
+
+    static void Child(string name, Mesh mesh, Material mat, Transform parent)
+    {
+        var g = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer));
+        g.transform.SetParent(parent, false);
+        g.GetComponent<MeshFilter>().sharedMesh = mesh;
+        g.GetComponent<MeshRenderer>().sharedMaterial = mat;
+    }
+
+    // Creates or updates a material asset on the given shader.
+    static Material MaterialAsset(string name, string shader)
+    {
+        string path = MaterialDir + name + ".mat";
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (mat == null)
+        {
+            System.IO.Directory.CreateDirectory(MaterialDir);
+            mat = new Material(Shader.Find(shader));
+            AssetDatabase.CreateAsset(mat, path);
+        }
+        EditorUtility.SetDirty(mat);
+        return mat;
+    }
+
+    // Matte URP Lit material (bunting). Back-face culled: the flag meshes carry both windings already.
+    static Material LitMaterial(string name, string hex)
+    {
+        var mat = MaterialAsset(name, "Universal Render Pipeline/Lit");
+        mat.SetColor("_BaseColor", Hex(hex));
+        mat.SetFloat("_Smoothness", 0.15f);
+        mat.SetFloat("_Cull", 2f);
+        return mat;
     }
 
     static Transform Group(string name, Transform parent)

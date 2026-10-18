@@ -463,13 +463,87 @@ cyl("table_foot", (-0.55, -3.65, 0.02), 0.2, 0.04, M_MINT)
 px, py = -0.45, -4.7
 cyl("parasol_base", (px, py, 0.04), 0.3, 0.08, M_WHITE)
 tube_between("parasol_pole", (px, py, 0.0), (px - 0.25, py + 0.15, 2.35), 0.025, M_ORANGE_STRIPE)
-bpy.ops.mesh.primitive_cone_add(vertices=64, radius1=1.25, radius2=0.03, depth=0.45,
-                                location=(px - 0.25, py + 0.15, 2.3))
-canopy = bpy.context.active_object
-canopy.name = "parasol_canopy"
+M_CANOPY_GREEN = principled("parasol_green", "#A1A58D", 0.8)
+M_CANOPY_WHITE = principled("parasol_white", "#E9EADD", 0.8)
+M_VALANCE = principled("parasol_valance", "#EDEBDD", 0.85)
+
+
+def parasol_canopy(name, R=1.25, depth=0.45, gores=8, pitch=0.19, white=0.03, valance_h=0.13, rows=10):
+    """Canopy built from flat gores, with the pinstripes cut into the faces.
+
+    The stripes are geometry with two materials (not a procedural texture), so they survive the
+    FBX export to Unity. As in the ref, they run parallel to each gore's centre line and meet in
+    V's at the seams. A scalloped valance hangs from the rim. All faces are double-sided.
+    """
+    half = math.pi / gores
+    rim = R * math.cos(half)            # gore centre-line length, apex to chord
+    edge = rim * math.tan(half)         # half-width of a gore at the chord
+    # stripe intervals across the gore, symmetric about the centre line: (y0, y1, material index)
+    gw = pitch - white
+    bands = [(-gw / 2, gw / 2, 0)]
+    y = gw / 2
+    while y < edge:
+        bands.append((y, min(y + white, edge), 1))
+        bands.append((y + white, min(y + white + gw, edge), 0))
+        y += pitch
+    bands += [(-b, -a, m) for a, b, m in bands[1:] if a < edge]
+
+    def to3d(x, yy, g, dz=0.0):
+        th = g * 2 * half
+        return Vector((x * math.cos(th) - yy * math.sin(th), x * math.sin(th) + yy * math.cos(th),
+                       depth / 2 - depth * (x / rim) ** 1.25 + dz))
+
+    me = bpy.data.meshes.new(name)
+    bm = bmesh.new()
+    for g in range(gores):
+        for y0, y1, mat in bands:
+            if y1 <= y0:
+                continue
+            # rows along the centre line, plus the points where this band meets the gore edges
+            xs = sorted({rim * k / rows for k in range(rows + 1)} |
+                        {min(abs(v) / math.tan(half), rim) for v in (y0, y1)})
+            for xa, xb in zip(xs, xs[1:]):
+                def span(x):
+                    w = x * math.tan(half)
+                    return max(y0, -w), min(y1, w)
+                (la, ra), (lb, rb) = span(xa), span(xb)
+                if ra - la <= 1e-6 and rb - lb <= 1e-6:
+                    continue
+                pts = []
+                for q in [(xa, la), (xb, lb), (xb, rb), (xa, ra)]:
+                    if not pts or (q[0] - pts[-1][0]) ** 2 + (q[1] - pts[-1][1]) ** 2 > 1e-12:
+                        pts.append(q)
+                if len(pts) > 1 and (pts[0][0] - pts[-1][0]) ** 2 + (pts[0][1] - pts[-1][1]) ** 2 <= 1e-12:
+                    pts.pop()
+                if len(pts) < 3:
+                    continue
+                f = bm.faces.new([bm.verts.new(to3d(qx, qy, g)) for qx, qy in pts])
+                f.material_index = mat
+        # valance along the chord: deepest mid-gore, shallow at the ribs
+        n = 12
+        top = [bm.verts.new(to3d(rim, -edge + 2 * edge * i / n, g)) for i in range(n + 1)]
+        bot = [bm.verts.new(to3d(rim + 0.01, -edge + 2 * edge * i / n, g,
+                                 -valance_h * (0.6 + 0.4 * math.cos(math.pi * (2 * i / n - 1)))))
+               for i in range(n + 1)]
+        for i in range(n):
+            f = bm.faces.new((top[i], bot[i], bot[i + 1], top[i + 1]))
+            f.material_index = 2
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+    front = list(bm.faces)
+    bmesh.ops.recalc_face_normals(bm, faces=front)
+    dup = bmesh.ops.duplicate(bm, geom=front)["geom"]
+    bmesh.ops.reverse_faces(bm, faces=[e for e in dup if isinstance(e, bmesh.types.BMFace)])
+    bm.to_mesh(me)
+    bm.free()
+    ob = link(bpy.data.objects.new(name, me))
+    for m in (M_CANOPY_GREEN, M_CANOPY_WHITE, M_VALANCE):
+        ob.data.materials.append(m)
+    return ob
+
+
+canopy = parasol_canopy("parasol_canopy")
+canopy.location = (px - 0.25, py + 0.15, 2.3)
 canopy.rotation_euler = (math.radians(-6), math.radians(8), 0)
-canopy.data.materials.append(striped_canopy_mat())
-bpy.ops.object.shade_smooth()
 
 # ---------------------------------------------------------------- balloons on the floor
 for name, pos, r, hx in [
@@ -586,6 +660,8 @@ else:
 # ---------------------------------------------------------------- save + render
 here = os.path.dirname(os.path.abspath(__file__))
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(here, "pool.blend"))
+if "--no-render" in sys.argv:
+    raise SystemExit(0)
 
 out = os.path.abspath(arg_out())
 os.makedirs(os.path.dirname(out), exist_ok=True)

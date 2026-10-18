@@ -56,6 +56,7 @@ A Unity scene of the pool, with two characters dancing, and a **10-second test r
 | 2026-10-10 | 1C props v2 accepted: "good for now". Scene build proven; textures next session | ✅ |
 | 2026-10-18 | 1C tiles v1 (crew check): random speckle read as noise, and at the ref's size the tiles blurred to flat colour | ✅ v2: dark tiles on an every-other-tile lattice, as in the ref; distance fade starts later |
 | 2026-10-18 | 1C tiles v2 signed off: "the tiles read as that pool". Floor is brighter and bluer than the ref; leave the colour for 1D | ✅ (colour → 1D) |
+| 2026-10-18 | 1C dressing v1 (bunting, see-through balloons, striped parasol) committed for review; director to review after the break | ⏳ awaiting review |
 
 ## Build notes (crew)
 - **Scene:** `unity/Assets/_Project/Scenes/Goal01_Pool.unity`. **Builder:** `KPop → Goal 1 → Build Pool Grey Box` (`Scripts/Editor/PoolGreyBoxBuilder.cs`); rebuilding replaces `Pool_GreyBox`.
@@ -69,4 +70,12 @@ A Unity scene of the pool, with two characters dancing, and a **10-second test r
 - **1C mosaic tiles (v1–v2):** procedural shader `Shaders/Mosaic.shader` (`KPop/Mosaic`), laid out in world space so floor, walls and lanes share one grid with no UVs. The builder writes the materials `Sets/Pool/Materials/M_PoolMosaic` and `M_LaneMosaic` from the palettes in `PoolGreyBoxBuilder.cs`, so the script stays the source of truth. Measured from `ref01_pool_01`: 2.5 cm tiles; a pale aqua field (`#CCE6E3`, `#BEDDDA`) with dark teal tiles (`#5FA3AA`, `#4A93A0`) only on every other tile in both directions (a 5 cm lattice, 90% filled), so they never touch; lanes are a navy mosaic, 10 tiles wide, on the same grid. Matte, soft lighting (wrapped diffuse, softened shadows). Tiles fade to their average colour below ~1 px to stop shimmer. Screenshots: `captures/goal01_pool/goal01_1C_tiles_v1_*`, `…_v2_*`.
 - **Batch captures:** `Unity.exe -batchmode -projectPath unity -executeMethod BatchCapture.Goal01Pool -quit` (editor closed) rebuilds the pool and writes the overlay, a 1080p wide and two close-ups to `captures/_overlay/`.
 - **For 1D:** the floor renders brighter and bluer than the ref (ours ≈ `#CBEDF8` against the ref's `#AFCECC` on the near floor). Fix it with light and grade, not by repainting the tiles.
-- **Next session (1C, rest):** parasol stripes and fringe, see-through balloons, bunting. Then bring the seats, side table, parasol and stair handrail (add posts) up to the kiosk and lounger detail level. Still untiled: the stair block's sides, which are tiled in the ref.
+- **1C dressing v1 (in review):**
+  - **Parasol:** the canopy is now 8 flat gores with the pinstripes cut into the geometry, as two materials (`#A1A58D` sage, `#E9EADD` white), so they survive FBX. The stripes run parallel within each gore and meet in V's at the seams, as in the ref. It has a scalloped cream valance and is double-sided (`build_pool.py`, `parasol_canopy()`). Rebuild without the Cycles render: `blender -b -P blender/pool/build_pool.py -- --no-render`.
+  - **Balloons:** a `KPop/Balloon` shader, see-through face-on and more solid at the edges, with a soft highlight. One material per balloon.
+  - **Bunting:** built in Unity by the builder. Two strings were fitted to `ref01_pool_01` by casting rays from the matched camera:
+    - **Back:** diagonal from the back wall (x 8.8) to the right wall (z 4.0), tied at 3.2 m, sagging 0.87 m.
+    - **Near:** lengthwise at x ≈ 10, tied at 3.0 m, sagging 0.59 m.
+    - Both meet near (9.8, 2.8, 11.05). Flags are 0.27 × 0.32 m, every 0.36 m, in the ref's order: pink, blue, teal, yellow, lavender. The tie points have no posts yet; they're out of frame in the wide.
+  - Screenshots: `captures/goal01_pool/goal01_1C_dressing_v1_*`.
+- **Next session (1C, rest):** director review of dressing v1. Then bring the seats, side table, parasol and stair handrail (add posts) up to the kiosk and lounger detail level. Still untiled: the stair block's sides, which are tiled in the ref.
